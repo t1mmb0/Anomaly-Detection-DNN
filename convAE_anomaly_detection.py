@@ -7,7 +7,10 @@ from prepare_data import normalize, load_saved_dataset, load_data_from_directory
 import matplotlib.pyplot as plt
 from pc_structure import *
 from convAE_structure import *
-
+import configparser
+config = configparser.ConfigParser()
+#Dataset Preparation
+config.read("config.ini")
 def image_split(image):   
     patch_w, patch_h = 112, 37
     patches = []
