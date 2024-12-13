@@ -121,67 +121,18 @@ def visualize_anomalies(image, anomalies, label):
     plt.title(f"Anomalie-Lokalisierung Heatmap/ Label: {label}")
     plt.show()
 
+def extract_aggregate(model, dataset):
+    aggregated_features = []
+
+    for image_batch,_ in dataset:
+        for image in image_batch:
+            feature_map = model(tf.expand_dims(image, axis=0))  # Feature Map für Block 2
+            feature_map = feature_map.numpy().squeeze()
+            patches = aggregate_patches(feature_map)
+            aggregated_features.append(patches)
+
+
+    return np.array(aggregated_features)
 
 if __name__ == "__main__":
-    
-    import configparser
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    dir_train = config["PATHS"]["train_dir"]
-    dir_test = config["PATHS"]["train_dir"]
-
-    data_train = preprocessing.image_dataset_from_directory(
-        dir_train,
-        labels="inferred",
-        seed=123,
-        image_size=(224, 224),
-        batch_size=32
-    )
-    data_test = preprocessing.image_dataset_from_directory(
-        dir_test,
-        labels="inferred",
-        seed=123,
-        image_size=(224, 224),
-        batch_size=32
-    )
-
-    data_train = data_train.map(lambda x,y: (normalize(x), y))
-    data_test = data_test.map(lambda x,y: (normalize(x), y))
-    total_batches = tf.data.experimental.cardinality(data_train).numpy()
-    data_train = data_train.take(total_batches)
-    total_batches = tf.data.experimental.cardinality(data_test).numpy()
-    data_test = data_test.take(total_batches)
-
-
-    model = resnet50_feature_extractor()
-    def extract_aggregate(model, dataset):
-        aggregated_features = []
-
-        for image_batch,_ in dataset:
-            for image in image_batch:
-                feature_map = model(tf.expand_dims(image, axis=0))  # Feature Map für Block 2
-                feature_map = feature_map.numpy().squeeze()
-                patches = aggregate_patches(feature_map)
-                aggregated_features.append(patches)
-
-
-        return np.array(aggregated_features)
-
-    #memory_bank = extract_aggregate(model,data_train)
-
-
-    anomalie_scores_per_image = []
-
-    image_batch, label_batch = next(iter(data_test))  # Hole den ersten Batch
-    label_batch = np.array(label_batch) 
-    #for i in range(1,6):
-    #    image = image_batch[i]  # Wähle das erste Bild im Batch aus
-    #    anomalies = calculate_anomalies(model, image, memory_bank)
-
-    #    anomalie_scores_per_image.append(anomalies)
-
-    #np.save("anomalies_per_image.npy",anomalie_scores_per_image)    
-    anomalie_scores_per_patch = np.load("./trained_models/anomaly_scores_per_image_PC.npy")
-
-    for i in range(anomalie_scores_per_patch.shape[0]):      
-        visualize_anomalies(image_batch[i], anomalie_scores_per_patch[i],label_batch[i])  # Visualisiere die Anomalien auf das erste Bild im Batch
+    pass
