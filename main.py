@@ -76,11 +76,10 @@ capsule_label_dict = {
     (0, 0, 0, 0, 0, 1): "squeeze"
 }
 
-data = load_data_from_directory(data_filename,image_size=(112,112))
+data = load_data_from_directory(data_filename,image_size=(224,224))
 
 dataset = data.map(lambda x,y: (normalize(x),y))
 
-dataset = dataset.map(lambda x,y: (add_gausian_noise(x),y))
 
 
 # Laden des Autoencoders
@@ -93,16 +92,21 @@ if True:
         'loss': ssim_loss
     }
 
-    autoencoder = keras.models.load_model("ae_model_capsule_conv_gausian.keras", custom_objects=custom_objects)
+    autoencoder = keras.models.load_model("ae_model_capsule_conv2_gausian.keras", custom_objects=custom_objects)
+    predictions = autoencoder.encoder.predict(dataset)
+    print(predictions.shape)
+
     print(dataset)
 
     
     images, labels = next(iter(dataset))
+
     for i in range(10):
         image, label = images[i], labels[i]
-        image_batch = tf.expand_dims(image, axis=0)
+        noisy_image = add_gausian_noise(image, stddev=0.1)
+        noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
 
-        prediction = autoencoder.predict(image_batch)
+        prediction = autoencoder.predict(noisy_image_batch)
 
 
 
@@ -117,4 +121,4 @@ if True:
 
 
         # Funktion aufrufen
-        visualization(original, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)
+        visualization(image, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)

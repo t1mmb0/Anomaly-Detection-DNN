@@ -187,7 +187,7 @@ if __name__ == "__main__":
     #    anomalie_scores_per_image.append(anomalies)
 
     #np.save("anomalies_per_image.npy",anomalie_scores_per_image)    
-    anomalie_scores_per_patch = np.load("anomalies_per_image_new.npy")
+    anomalie_scores_per_patch = np.load("./trained_models/anomaly_scores_per_image_PC.npy")
 
     for i in range(anomalie_scores_per_patch.shape[0]):      
         visualize_anomalies(image_batch[i], anomalie_scores_per_patch[i],label_batch[i])  # Visualisiere die Anomalien auf das erste Bild im Batch
