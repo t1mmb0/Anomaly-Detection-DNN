@@ -9,7 +9,7 @@ import numpy as np
 from scipy.ndimage import zoom
 
 """
-    # Modell Architektur
+    PC_Structure
 """
 
 def resnet50_feature_extractor(weights="imagenet",input_shape=(224,224,3), output_layer="conv2_block3_out"):

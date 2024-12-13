@@ -89,5 +89,5 @@ for i in range(5):
     plt.axis('off')
 
 plt.show()
-
-keras.models.save_model(autoencoder, "ae_model_capsule_conv2_gausian.keras")
+output_dir = config.get("CONV_AE_PARAMETERS", "output_dir" )
+keras.models.save_model(autoencoder, output_dir)

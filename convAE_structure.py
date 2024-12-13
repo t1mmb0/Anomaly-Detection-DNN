@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-"""# Modell Architektur"""
+"""Model Structure"""
 
 
 @keras.utils.register_keras_serializable()
