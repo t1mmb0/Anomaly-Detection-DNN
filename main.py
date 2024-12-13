@@ -5,7 +5,7 @@ from tensorflow import keras
 import numpy as np
 from prepare_data import normalize, load_saved_dataset, load_data_from_directory, add_gausian_noise
 import matplotlib.pyplot as plt
-from ResNet_model import *
+from pc_structure import *
 from convAE import *
 
 def image_split(image):   

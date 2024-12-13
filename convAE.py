@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers, regularizers, applications
-from ResNet_model import resnet50_feature_extractor
+from pc_structure import resnet50_feature_extractor
 import matplotlib.pyplot as plt
 import numpy as np
 

@@ -2,7 +2,7 @@ import numpy as np
 from prepare_data import load_data_from_directory
 import matplotlib.pyplot as plt
 
-from ResNet_model import resnet50_feature_extractor
+from pc_structure import resnet50_feature_extractor
 
 
 data = load_data_from_directory("./Images/capsule_images_train")

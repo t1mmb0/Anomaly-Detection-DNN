@@ -11,14 +11,6 @@ from scipy.ndimage import zoom
 """
     # Modell Architektur
 """
-label_mapping = {
-    0: "crack",
-    1: "faulty_imprint",
-    2: "good",
-    3: "poke",
-    4: "scratch",
-    5: "squeeze"
-}
 
 def resnet50_feature_extractor(weights="imagenet",input_shape=(224,224,3), output_layer="conv2_block3_out"):
 
@@ -122,7 +114,6 @@ def visualize_anomalies(image, anomalies, label):
     heatmap = anomalies_normalized.reshape(56, 56)  # Angenommen 56x56 Patches
     heatmap_rescaled = zoom(heatmap, (224/56, 224/56), order=1)
     # Visualisiere das zugrundeliegende Bild
-    label = label_mapping.get(label)
 
     plt.imshow(image)  # Originalbild anzeigen
     plt.imshow(heatmap_rescaled, cmap='hot', interpolation='nearest', alpha=0.2)  # Heatmap mit Transparenz überlagern
@@ -132,9 +123,12 @@ def visualize_anomalies(image, anomalies, label):
 
 
 if __name__ == "__main__":
-
-    dir_train = "./Images/capsule_images_train"
-    dir_test = "./Images/capsule_images_test"
+    
+    import configparser
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    dir_train = config["PATHS"]["train_dir"]
+    dir_test = config["PATHS"]["train_dir"]
 
     data_train = preprocessing.image_dataset_from_directory(
         dir_train,
