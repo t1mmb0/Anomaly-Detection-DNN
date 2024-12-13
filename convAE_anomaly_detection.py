@@ -7,10 +7,8 @@ from prepare_data import normalize, load_saved_dataset, load_data_from_directory
 import matplotlib.pyplot as plt
 from pc_structure import *
 from convAE_structure import *
-import configparser
-config = configparser.ConfigParser()
-#Dataset Preparation
-config.read("config.ini")
+
+
 def image_split(image):   
     patch_w, patch_h = 112, 37
     patches = []
@@ -66,9 +64,14 @@ def visualization(original, reconstruction, error_map, label, ssim, mse, dict):
     plt.tight_layout(pad=5)  # Abstand zwischen den Plots
     plt.show()
 
-#Laden der Trainingsdaten und Augmentation
+# Load config and extract parameters
+import configparser
+config = configparser.ConfigParser()
+#Dataset Preparation
+config.read("config.ini")
+data_filename = config.get("PATHS", "test_dir")
+model_path = config.get("CONV_AE_PARAMETERS", "model_dir")
 
-data_filename = "./Images/capsule_images_test"
 
 capsule_label_dict = {
     (1, 0, 0, 0, 0, 0): "crack",
@@ -79,49 +82,43 @@ capsule_label_dict = {
     (0, 0, 0, 0, 0, 1): "squeeze"
 }
 
+#Load data
+
 data = load_data_from_directory(data_filename,image_size=(224,224))
 
 dataset = data.map(lambda x,y: (normalize(x),y))
 
+#Load model
+
+custom_objects = {
+    'Encoder': Encoder,
+    'Decoder': Decoder,
+    'Autoencoder': Autoencoder,
+    'ResNetEncoder': ResNetEncoder,
+    'loss': ssim_loss
+}
+
+autoencoder = keras.models.load_model(model_path, custom_objects=custom_objects)
+predictions = autoencoder.encoder.predict(dataset)
+
+# Prepare data
+images, labels = next(iter(dataset))
+
+#Calculate anomaly scores
+for i in range(10):
+    image, label = images[i], labels[i]
+    noisy_image = add_gausian_noise(image, stddev=0.1)
+    noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
+
+    prediction = autoencoder.predict(noisy_image_batch)
+  
+    original = image
+    reconstruction = prediction[0]
+
+    ssim_error = calculate_ssim(original, reconstruction)
+    mse_error = calculate_mse(original, reconstruction)
+    error_map = compute_error_map(original, reconstruction)
 
 
-# Laden des Autoencoders
-if True:
-    custom_objects = {
-        'Encoder': Encoder,
-        'Decoder': Decoder,
-        'Autoencoder': Autoencoder,
-        'ResNetEncoder': ResNetEncoder,
-        'loss': ssim_loss
-    }
-
-    autoencoder = keras.models.load_model("ae_model_capsule_conv2_gausian.keras", custom_objects=custom_objects)
-    predictions = autoencoder.encoder.predict(dataset)
-    print(predictions.shape)
-
-    print(dataset)
-
-    
-    images, labels = next(iter(dataset))
-
-    for i in range(10):
-        image, label = images[i], labels[i]
-        noisy_image = add_gausian_noise(image, stddev=0.1)
-        noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
-
-        prediction = autoencoder.predict(noisy_image_batch)
-
-
-
-
-        
-        original = image
-        reconstruction = prediction[0]
-
-        ssim_error = calculate_ssim(original, reconstruction)
-        mse_error = calculate_mse(original, reconstruction)
-        error_map = compute_error_map(original, reconstruction)
-
-
-        # Funktion aufrufen
-        visualization(image, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)
+    # Funktion aufrufen
+    visualization(image, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)
