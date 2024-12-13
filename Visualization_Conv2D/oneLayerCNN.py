@@ -1,11 +1,11 @@
 import numpy as np
-from prepare_data import load_saved_dataset
+from prepare_data import load_data_from_directory
 import matplotlib.pyplot as plt
 
 from ResNet_model import resnet50_feature_extractor
 
 
-data = load_saved_dataset("capsule_train_normalized.keras")
+data = load_data_from_directory("./Images/capsule_images_train")
 
 images, labels = next(iter(data.take(1)))
 

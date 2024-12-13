@@ -5,7 +5,6 @@ import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
 import numpy as np
-from config import augment_config
 from keras import preprocessing
 
 
@@ -209,10 +208,4 @@ def add_gausian_noise(image, stddev=0.1):
 
 if __name__ == "__main__":
 
-
-    data = load_saved_dataset("capsule_train_normalized.keras")
-    print_example_images_labels(data)
-    show_shape_images_labels(data)
-    data = data.map(lambda image, label: augment_data(image, label, augment_config))
-    data = data.map(normalize)
-    show_images(data, num_images=16)
+    pass
