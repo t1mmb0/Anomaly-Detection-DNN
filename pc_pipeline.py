@@ -12,8 +12,8 @@ import configparser
 # load configuration
 config = configparser.ConfigParser()
 config.read("config.ini")
-dir_train = config["PATHS"]["train_dir"]
-dir_test = config["PATHS"]["train_dir"]
+dir_train = config.get("PATHS","train_dir")
+dir_test = config.get("PATHS","test_dir")
 
 #load dataset
 
@@ -61,7 +61,8 @@ for i in range(1,6):
     anomaly_scores_per_image.append(anomalies)
 
 # saving extracted anomaly scores
-np.save("anomaly_scores_per_image_PC_2.npy",anomaly_scores_per_image)    
+output_dir = config.get("PC_PARAMETERS", "output_dir")
+np.save(output_dir, anomaly_scores_per_image)    
 
 print("Training completed successfully.")
 

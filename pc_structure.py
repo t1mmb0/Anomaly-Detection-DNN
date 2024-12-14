@@ -134,5 +134,6 @@ def extract_aggregate(model, dataset):
 
     return np.array(aggregated_features)
 
+
 if __name__ == "__main__":
     pass
