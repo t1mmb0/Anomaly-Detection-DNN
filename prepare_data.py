@@ -203,7 +203,25 @@ def add_gausian_noise(image, stddev=0.1):
 
     return noisy_image
 
+def crop_images_to_224(images, labels=None):
+    """
+    Schneidet Bilder auf die Größe (224, 224) zu, ohne das Seitenverhältnis zu verändern.
+    Nimmt an, dass die Eingabebilder mindestens 224x224 groß sind.
+    
+    Parameter:
+    images: TensorFlow-Tensor ; Die Bilder aus dem Dataset.
+    labels: TensorFlow-Tensor ; Labels der Bilder (optional).
 
+    Rückgabe:
+    images: TensorFlow-Tensor ; Bilder mit Größe (224, 224).
+    labels: TensorFlow-Tensor ; Labels der Bilder (falls vorhanden).
+    """
+    target_size = [224, 224]
+    
+    # Zentrierter Crop auf (224, 224)
+    images = tf.image.resize_with_crop_or_pad(images, target_size[0], target_size[1])
+    
+    return images, labels
 #Testumgebung
 
 if __name__ == "__main__":

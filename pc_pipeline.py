@@ -21,14 +21,14 @@ data_train = preprocessing.image_dataset_from_directory(
     dir_train,
     labels="inferred",
     seed=123,
-    image_size=(224, 224),
+    image_size=(256, 256),
     batch_size=32
 )
 data_test = preprocessing.image_dataset_from_directory(
     dir_test,
     labels="inferred",
     seed=123,
-    image_size=(224, 224),
+    image_size=(256, 256),
     batch_size=32
 )
 

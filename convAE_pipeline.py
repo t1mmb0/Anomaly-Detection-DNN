@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
-from prepare_data import load_data_from_directory, normalize, add_gausian_noise
+from prepare_data import load_data_from_directory, normalize, add_gausian_noise, crop_images_to_224
 import convAE_structure
 
 import configparser
@@ -24,6 +24,7 @@ dir = config.get("PATHS", "train_dir")
 
 #Datensatz Loader:
 data = load_data_from_directory(dir,image_size=(shape[0],shape[1]))
+data = data.map(crop_images_to_224)
 data = data.map(lambda x,y: (normalize(x),y))
 
 #Datensatz preprocessing

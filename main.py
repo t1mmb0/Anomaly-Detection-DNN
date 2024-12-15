@@ -1,7 +1,7 @@
 import numpy as np
 import configparser
 config = configparser.ConfigParser()
-from prepare_data import load_data_from_directory, normalize
+from prepare_data import load_data_from_directory, normalize, crop_images_to_224
 import pc_structure as pc
 
 #Visualization of Anomaly Detection for PC
@@ -11,8 +11,9 @@ model_dir = config.get("PC_PARAMETERS", "model_dir")
 
 
 #Load dataset and prepare
-data_dir = config.get("PATHS", "train_dir")
-data = load_data_from_directory(data_dir)
+data_dir = config.get("PATHS", "test_dir")
+data = load_data_from_directory(data_dir, seed=123)
+
 
 data = data.map(lambda x,y: (normalize(x),y))
 image_batch, label_batch = next(iter(data))
