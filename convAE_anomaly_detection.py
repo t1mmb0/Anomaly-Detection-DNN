@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-from prepare_data import normalize, load_saved_dataset, load_data_from_directory, add_gausian_noise
+from prepare_data import normalize, load_saved_dataset, load_data_from_directory, add_gausian_noise, crop_images_to_224
 import matplotlib.pyplot as plt
 from pc_structure import *
 from convAE_structure import *
@@ -84,8 +84,8 @@ capsule_label_dict = {
 
 #Load data
 
-data = load_data_from_directory(data_filename,image_size=(224,224))
-
+data = load_data_from_directory(data_filename,image_size=(256,256))
+data = data.map(crop_images_to_224)
 dataset = data.map(lambda x,y: (normalize(x),y))
 
 #Load model
@@ -107,7 +107,7 @@ images, labels = next(iter(dataset))
 #Calculate anomaly scores
 for i in range(10):
     image, label = images[i], labels[i]
-    noisy_image = add_gausian_noise(image, stddev=0.1)
+    noisy_image = add_gausian_noise(image, stddev=0.05)
     noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
 
     prediction = autoencoder.predict(noisy_image_batch)
