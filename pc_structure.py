@@ -66,7 +66,6 @@ def aggregate_patches(feature_map, patch_size=3):
 from sklearn.neighbors import NearestNeighbors
 
 def calculate_anomalies(model, image, memory_bank): 
-    anomalies = []
 
     # KNN-Ähnlichkeitsberechnung
     knn = NearestNeighbors(n_neighbors=1, metric='euclidean')
@@ -79,14 +78,13 @@ def calculate_anomalies(model, image, memory_bank):
 
     # Aggregiere Patches für das Testbild
     patches = aggregate_patches(feature_map)
-
     # Berechne Ähnlichkeit (Abstand) der Patches des Testbildes zu den Patches in der Memorybank
     distances = []
-
+    knn.fit(memory_bank)
     # Berechne KNN für jedes Patch des ersten Testbildes
     for patch in patches:
         # Berechne die Distanz von diesem Patch zu allen Patches der Memorybank
-        knn.fit(memory_bank.reshape(-1, 256))  # Memorybank auf 2D umformen
+        
         dist, _ = knn.kneighbors(patch.reshape(1, -1))  # Berechne Abstand zu den nächstgelegenen Patches
         distances.append(dist[0][0])  # Speichere den Abstand zum nächstgelegenen Nachbarn
 
@@ -133,6 +131,47 @@ def extract_aggregate(model, dataset):
 
 
     return np.array(aggregated_features)
+
+from sklearn.metrics.pairwise import euclidean_distances
+
+def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, random_seed=42):
+    """
+    Optimierte Coreset-Subsampling-Methode mit Zwischenspeicherung der Abstände.
+    
+    Parameter:
+    - flatten_memory_bank: numpy array der Form (num_vectors, feature_dim)
+    - coreset_fraction: Anteil der Vektoren, die im Coreset enthalten sein sollen
+    - random_seed: Seed für Reproduzierbarkeit
+    
+    Rückgabe:
+    - coreset: numpy array der Form (coreset_size, feature_dim)
+    """
+    np.random.seed(random_seed)
+    num_vectors = flatten_memory_bank.shape[0]
+    coreset_size = int(num_vectors * coreset_fraction)
+    
+    # Initialisierung: Wähle einen zufälligen Startpunkt
+    first_index = np.random.randint(0, num_vectors)
+    coreset_indices = [first_index]
+    
+    # Berechne initial die Abstände von allen Punkten zu diesem Startpunkt
+    distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[first_index].reshape(1, -1)).flatten()
+    
+    for i in range(coreset_size - 1):
+        if i % 100 == 0:
+            print(f"Iteration {i} of {coreset_size}.")
+        
+        # Finde den Punkt, der den maximalen Abstand zu den bisherigen Coreset-Punkten hat
+        max_dist_idx = np.argmax(distances)
+        coreset_indices.append(max_dist_idx)
+        
+        # Aktualisiere die minimalen Abstände: Nur neue Abstände berücksichtigen
+        new_distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[max_dist_idx].reshape(1, -1)).flatten()
+        distances = np.minimum(distances, new_distances)
+    
+    # Baue das finale Coreset aus den gewählten Indizes
+    coreset = flatten_memory_bank[coreset_indices]
+    return coreset
 
 
 if __name__ == "__main__":
