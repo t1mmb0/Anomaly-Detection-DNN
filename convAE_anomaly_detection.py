@@ -107,7 +107,7 @@ images, labels = next(iter(dataset))
 #Calculate anomaly scores
 for i in range(10):
     image, label = images[i], labels[i]
-    noisy_image = add_gausian_noise(image, stddev=0.05)
+    noisy_image = add_gausian_noise(image, stddev=0.1)
     noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
 
     prediction = autoencoder.predict(noisy_image_batch)

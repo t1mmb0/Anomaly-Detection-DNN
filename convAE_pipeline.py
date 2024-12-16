@@ -18,6 +18,7 @@ shape= config.get("CONV_AE_PARAMETERS", "shape")
 shape = ast.literal_eval(shape) 
 resnet = config.getboolean("CONV_AE_PARAMETERS", "resnet")
 denoising =config.getboolean("CONV_AE_PARAMETERS", "denoising")
+noise_stddev = config.getfloat("CONV_AE_PARAMETERS", "noise_stddev")
 training_epochs = config.getint("CONV_AE_PARAMETERS", "training_epochs")
 dir = config.get("PATHS", "train_dir")
 
@@ -37,8 +38,8 @@ train_dataset = train_dataset.map(lambda x,y: (x, x))
 val_dataset = val_dataset.map(lambda x,y: (x,x))
 
 if denoising:
-    train_dataset = train_dataset.map(lambda x,y: (add_gausian_noise(x, 0.05), y))
-    val_dataset = val_dataset.map(lambda x,y: (add_gausian_noise(x, 0.05), y))
+    train_dataset = train_dataset.map(lambda x,y: (add_gausian_noise(x, noise_stddev), y))
+    val_dataset = val_dataset.map(lambda x,y: (add_gausian_noise(x, noise_stddev), y))
 
 
 train_dataset = train_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
