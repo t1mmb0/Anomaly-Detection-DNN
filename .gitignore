@@ -161,3 +161,6 @@ cython_debug/
 
 #Image Data
 /Images/
+
+Evaluation Data
+/mvtec_ad_evaluation/
