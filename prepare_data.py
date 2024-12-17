@@ -8,7 +8,7 @@ import numpy as np
 from keras import preprocessing
 
 
-def load_data_from_directory(directory, label_type="inferred", batch_size=32, validation_split=None, subset=None, seed=42, label_mode="categorical", image_size=(224,224)):
+def load_data_from_directory(directory, label_type="inferred", batch_size=32, validation_split=None, subset=None, seed=42, label_mode="categorical", image_size=(224,224),shuffle=False):
 
     """
     lädt das Dataset und gibt es aus.
@@ -21,7 +21,8 @@ def load_data_from_directory(directory, label_type="inferred", batch_size=32, va
         subset=subset,
         seed=seed,
         label_mode=label_mode,
-        image_size=image_size
+        image_size=image_size,
+        shuffle=shuffle
     )
     return data
 
