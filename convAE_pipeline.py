@@ -51,8 +51,17 @@ val_dataset = val_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 autoencoder = convAE_structure.Autoencoder(resnet, shape)
 autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=convAE_structure.ssim_loss)
 
+dummy_input = tf.keras.Input(shape=(224, 224, 3))
+autoencoder(dummy_input)
+# Summary für den Encoder
 
 
+print("Encoder Summary:")
+autoencoder.encoder.summary()
+
+# Summary für den Decoder
+print("\nDecoder Summary:")
+autoencoder.decoder.summary()
 #Callback Definitionen, um Overfitting zu unterbinden und für die Visualizierung während des Trainings.
 
 early_stopping = tf.keras.callbacks.EarlyStopping(
@@ -66,6 +75,18 @@ visualization_callback = convAE_structure.VisualizationCallback(val_dataset, int
 #Training des Modells / Optimierung der Parameter
 
 history = autoencoder.fit(train_dataset, epochs=training_epochs, validation_data=val_dataset, callbacks=[early_stopping])
+
+# Visualisiere den Trainingsverlust
+plt.figure(figsize=(12, 6))
+
+# Verlust
+plt.subplot(1, 2, 1)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Train and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
 
 #Visualisierung mit Beispielbildern
 

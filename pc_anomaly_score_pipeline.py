@@ -51,10 +51,12 @@ output_dir = config.get("PC_PARAMETERS", "output_dir")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
+# Initialisiere einen Zähler pro Label-Kategorie
+label_counters = {}
 
 for i in range(len(all_images)):
     
-    image = all_images[i]  # Take first image from batch
+    image = all_images[i]  # Nimm das aktuelle Bild
     label = all_labels[i].numpy()
     label_name = capsule_label_dict[tuple(label)]
 
@@ -62,18 +64,28 @@ for i in range(len(all_images)):
     label_folder = os.path.join(output_dir, label_name)
     if not os.path.exists(label_folder):
         os.makedirs(label_folder)
+        label_counters[label_name] = 0  # Starte den Zähler für neue Label-Kategorie
 
+    # Anomalien berechnen und normalisieren
     anomalies = pc.calculate_anomalies(model, image, memory_bank)
-
     min_score = np.min(anomalies)
     max_score = np.max(anomalies)
     anomalies = (anomalies - min_score) / (max_score - min_score)
-    anomalies = anomalies.reshape(56,56)
+    anomalies = anomalies.reshape(56, 56)
 
+    # Konvertiere Anomalien zu einem Bild
     anomaly_score_image = Image.fromarray((anomalies * 255).astype(np.uint8))
 
-    image_path = os.path.join(label_folder, f"{i}.tiff")
-    anomaly_score_image.save(image_path)  # Speichern als .tiff-Datei
+    # Dateinamen mit dreistelliger Formatierung erstellen
+    file_index = label_counters[label_name]  # Hole aktuellen Zählerstand
+    filename = f"{file_index:03d}.tiff"  # Formatierung zu '000.tiff', '001.tiff', etc.
+    image_path = os.path.join(label_folder, filename)
+
+    # Bild speichern
+    anomaly_score_image.save(image_path)
+
+    # Zähler für das aktuelle Label erhöhen
+    label_counters[label_name] += 1
 
     print(f"Saved anomaly score for image {i} in {image_path}")
 
