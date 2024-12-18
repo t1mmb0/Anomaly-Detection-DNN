@@ -2,10 +2,10 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
 from tensorflow import keras
+from keras import models
 import matplotlib.pyplot as plt
 from prepare_data import load_data_from_directory, normalize, add_gausian_noise, crop_images_to_224
 import convAE_structure
-
 import configparser
 config = configparser.ConfigParser()
 import ast
@@ -21,6 +21,7 @@ upsampling = config.getboolean("CONV_AE_PARAMETERS", "upsampling")
 denoising =config.getboolean("CONV_AE_PARAMETERS", "denoising")
 noise_stddev = config.getfloat("CONV_AE_PARAMETERS", "noise_stddev")
 training_epochs = config.getint("CONV_AE_PARAMETERS", "training_epochs")
+learning_rate = config.getfloat("CONV_AE_PARAMETERS", "learning_rate")
 dir = config.get("PATHS", "train_dir")
 
 
@@ -50,7 +51,8 @@ val_dataset = val_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
 
 autoencoder = convAE_structure.Autoencoder(resnet,upsampling, shape)
-autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=convAE_structure.ssim_loss)
+
+autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss=convAE_structure.ssim_loss)
 
 dummy_input = tf.keras.Input(shape=(224, 224, 3))
 autoencoder(dummy_input)
@@ -78,9 +80,10 @@ visualization_callback = convAE_structure.VisualizationCallback(val_dataset, int
 history = autoencoder.fit(train_dataset, epochs=training_epochs, validation_data=val_dataset, callbacks=[early_stopping])
 
 # Visualisiere den Trainingsverlust
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(6, 6))
 
 # Verlust
+
 plt.subplot(1, 2, 1)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
@@ -97,7 +100,7 @@ reconstructed_images = autoencoder.predict(example_images)
 
 
 plt.figure(figsize=(15, 5))
-
+plt.title()
 # Originalbilder anzeigen
 for i in range(5):
     plt.subplot(2, 5, i + 1)
@@ -114,4 +117,4 @@ for i in range(5):
 
 plt.show()
 output_dir = config.get("CONV_AE_PARAMETERS", "output_dir" )
-keras.models.save_model(autoencoder, output_dir)
+models.save_model(autoencoder, output_dir)
