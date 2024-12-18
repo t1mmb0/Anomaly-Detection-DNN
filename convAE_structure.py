@@ -76,20 +76,50 @@ class Decoder(tf.keras.Model):
         x = self.conv_4(x)
         x = self.R(x)
         return x
+    
+@keras.utils.register_keras_serializable()
+class Decoder_Upsampling(tf.keras.Model):
+    def __init__(self):
+        super(Decoder_Upsampling, self).__init__()
 
+        self.conv_1 = layers.Conv2D(256, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.up_1 = layers.UpSampling2D((2,2))
+        self.conv_2 = layers.Conv2D(256, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.up_2 = layers.UpSampling2D((2,2))
+        self.conv_3 = layers.Conv2D(128, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.up_3 = layers.UpSampling2D((2,2))
+        self.conv_4 = layers.Conv2D(64, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.R = layers.Conv2D(3, (3, 3), activation="sigmoid", padding="same")
+
+    def call(self, inputs):    
+        x = self.conv_1(inputs)
+        x = self.up_1(x)
+        x = self.conv_2(x)
+        x = self.up_2(x)
+        x = self.conv_3(x)
+        x = self.up_3(x)
+        x = self.conv_4(x)
+        x = self.R(x)
+        return x
+    
 @keras.utils.register_keras_serializable()
 class Autoencoder(keras.Model):
-    def __init__(self, resnet, shape, **kwargs):
+    def __init__(self, resnet, upsampling, shape, **kwargs):
         super(Autoencoder, self).__init__( **kwargs)
+
         self.shape = shape
         self.resnet = resnet
+        self.upsampling = upsampling
 
         if self.resnet:
             self.encoder = ResNetEncoder( shape)
         else:
             self.encoder = Encoder(shape)
 
-        self.decoder = Decoder()
+        if self.upsampling:
+            self.decoder = Decoder_Upsampling()
+        else:
+            self.decoder = Decoder()
 
     def call(self, inputs):
 
@@ -102,7 +132,8 @@ class Autoencoder(keras.Model):
         config = super(Autoencoder, self).get_config()
         config.update({
             'shape': self.shape,
-            'resnet':self.resnet
+            'resnet':self.resnet,
+            'upsampling': self.upsampling
         })
         return config
 
