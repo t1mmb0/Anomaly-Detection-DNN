@@ -15,13 +15,11 @@ config.read("config.ini")
 model_dir = config.get("PC_PARAMETERS", "model_dir")
 training_mode=True
 
-capsule_label_dict = {
-    (1, 0, 0, 0, 0, 0): "crack",
-    (0, 1, 0, 0, 0, 0): "faulty_imprint",
-    (0, 0, 1, 0, 0, 0): "good",
-    (0, 0, 0, 1, 0, 0): "poke",
-    (0, 0, 0, 0, 1, 0): "scratch",
-    (0, 0, 0, 0, 0, 1): "squeeze"
+bottle_label_dict = {
+    (1, 0, 0, 0): "broken_large",
+    (0, 1, 0, 0): "broken_small",
+    (0, 0, 1, 0): "contamination",
+    (0, 0, 0, 1): "good"
 }
 
 #Load dataset and prepare
@@ -29,7 +27,7 @@ data_dir = config.get("PATHS", "test_dir")
 data = load_data_from_directory(data_dir, seed=123, image_size=(256,256))
 data = data.map(crop_images_to_224)
 
-memory_bank = np.load(config.get("PC_PARAMETERS", "model_dir"))
+memory_bank = np.load(config.get("PC_PARAMETERS", "coreset"))
 model = pc.resnet50_feature_extractor()
 
 
@@ -46,10 +44,6 @@ for image_batch, label_batch in data:
 all_images = tf.concat(all_images, axis=0)
 all_labels = tf.concat(all_labels, axis=0)
 
-from sklearn.random_projection import GaussianRandomProjection
-projection_dim = all_images[0]
-projector =  GaussianRandomProjection(n_components=all_images[0], random_state=42)
-all_images = projector.fit_transform(all_images)
 
 # Ordnerstruktur für die Bildspeicherung erstellen
 output_dir = config.get("PC_PARAMETERS", "output_dir")
@@ -63,7 +57,7 @@ for i in range(len(all_images)):
     
     image = all_images[i]  # Nimm das aktuelle Bild
     label = all_labels[i].numpy()
-    label_name = capsule_label_dict[tuple(label)]
+    label_name = bottle_label_dict[tuple(label)]
 
     # Erstelle den Ordner für das Label, falls noch nicht vorhanden
     label_folder = os.path.join(output_dir, label_name)
@@ -72,7 +66,7 @@ for i in range(len(all_images)):
         label_counters[label_name] = 0  # Starte den Zähler für neue Label-Kategorie
 
     # Anomalien berechnen und normalisieren
-    anomalies = pc.calculate_anomalies(model, image, memory_bank)
+    anomalies = pc.calculate_anomalies(model, image, memory_bank,projection_dim=50)
     min_score = np.min(anomalies)
     max_score = np.max(anomalies)
     anomalies = (anomalies - min_score) / (max_score - min_score)

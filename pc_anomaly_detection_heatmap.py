@@ -47,9 +47,6 @@ for image_batch, label_batch in data:
 all_images = tf.concat(all_images, axis=0)
 all_labels = tf.concat(all_labels, axis=0)
 
-from sklearn.random_projection import GaussianRandomProjection
-
-
 
 #extracting features from test data and calculate distance from data in memory bank
 
@@ -57,7 +54,7 @@ anomaly_scores_per_image = []
 
 for i in range(5):
     image = all_images[i]  # Take first image from batch
-    anomalies = pc.calculate_anomalies(model, image, memory_bank) # calculate scores
+    anomalies = pc.calculate_anomalies(model, image, memory_bank, projection_dim=50) # calculate scores
 
     anomaly_scores_per_image.append(anomalies)
 anomaly_scores = np.array(anomaly_scores_per_image)
