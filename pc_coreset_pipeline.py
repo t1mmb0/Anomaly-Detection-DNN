@@ -39,9 +39,9 @@ data_train = data_train.map(crop_images_to_224)
 data_test = data_test.map(lambda x,y: (normalize(x), y))
 data_test = data_test.map(crop_images_to_224)
 total_batches = tf.data.experimental.cardinality(data_train).numpy()
-data_train = data_train.take(total_batches-4)
+data_train = data_train.take(total_batches)
 total_batches = tf.data.experimental.cardinality(data_test).numpy()
-data_test = data_test.take(total_batches-4)
+data_test = data_test.take(total_batches)
 
 #creating feature Extractor
 
@@ -54,33 +54,13 @@ memory_bank = pc.extract_aggregate(model,data_train)
 #Coreset Subsampling
 
 flatten_memory_bank = memory_bank.reshape(-1, memory_bank.shape[-1])
+np.save("trained_models/memory_bank_bottle.npy",memory_bank)
 #flatten_memory_bank = np.load("trained_models/coreset_capsule_0.01.npy")
 print(flatten_memory_bank.shape)
 
 coreset = pc.coreset_subsampling(flatten_memory_bank)
-
+#coreset = np.load("./trained_models/capsule_anomaly_scores.npy")
 print(coreset.shape)
 
 output_dir = config.get("PC_PARAMETERS", "output_dir")
 np.save(output_dir,coreset)
-
-#extracting features from test data and calculate distance from data in memory bank
-
-anomaly_scores_per_image = []
-image_batch, label_batch = next(iter(data_test))  # Take first batch
-label_batch = np.array(label_batch) 
-for i in range(1):
-    image = image_batch[i]  # Take first image from batch
-    anomalies = pc.calculate_anomalies(model, image, flatten_memory_bank) # calculate scores
-
-    anomaly_scores_per_image.append(anomalies)
-anomaly_scores = np.array(anomaly_scores_per_image)
-
-# saving extracted anomaly scores
-   
-print("Training completed successfully.")
-
-print(anomaly_scores)
-# Visualize anomalies on first image in the batch
-for i in range(anomaly_scores.shape[0]):      
-    pc.visualize_anomalies(image_batch[i], anomaly_scores[i],label_batch[i])  # Visualisiere die Anomalien auf das erste Bild im Batch

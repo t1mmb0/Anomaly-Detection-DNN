@@ -46,6 +46,11 @@ for image_batch, label_batch in data:
 all_images = tf.concat(all_images, axis=0)
 all_labels = tf.concat(all_labels, axis=0)
 
+from sklearn.random_projection import GaussianRandomProjection
+projection_dim = all_images[0]
+projector =  GaussianRandomProjection(n_components=all_images[0], random_state=42)
+all_images = projector.fit_transform(all_images)
+
 # Ordnerstruktur für die Bildspeicherung erstellen
 output_dir = config.get("PC_PARAMETERS", "output_dir")
 if not os.path.exists(output_dir):

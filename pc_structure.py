@@ -65,7 +65,7 @@ def aggregate_patches(feature_map, patch_size=3):
 
 from sklearn.neighbors import NearestNeighbors
 
-def calculate_anomalies(model, image, memory_bank): 
+def calculate_anomalies(model, image, memory_bank, projection_dim=26): 
 
     # KNN-Ähnlichkeitsberechnung
     knn = NearestNeighbors(n_neighbors=1, metric='euclidean')
@@ -74,10 +74,13 @@ def calculate_anomalies(model, image, memory_bank):
 
     # Feature Map für das Testbild extrahieren
     feature_map = model(tf.expand_dims(image, axis=0))  # Feature Map für Block 2
+    
     feature_map = feature_map.numpy().squeeze()  # Entferne die Batch-Dimension
 
     # Aggregiere Patches für das Testbild
     patches = aggregate_patches(feature_map)
+    projector = GaussianRandomProjection(n_components=projection_dim, random_state=42)
+    patches = projector.fit_transform(patches)
     # Berechne Ähnlichkeit (Abstand) der Patches des Testbildes zu den Patches in der Memorybank
     distances = []
     knn.fit(memory_bank)
@@ -101,7 +104,7 @@ def visualize_anomalies(image, anomalies, label):
     """
 
     # Beispiel für Schwellenwert
-    threshold = 0.12  # Der Schwellenwert für Anomalien
+    threshold = 0.20  # Der Schwellenwert für Anomalien
 
     # Setze Anomalien unter dem Schwellenwert auf 0
     anomalies_thresholded = np.where(anomalies >= threshold, anomalies, 0)
@@ -132,9 +135,36 @@ def extract_aggregate(model, dataset):
 
     return np.array(aggregated_features)
 
+from sklearn.random_projection import GaussianRandomProjection
+# Funktion zur zufälligen linearen Projektion
+def compute_projection_dimension(num_vectors, max_dim=256, min_dim=10, scaling_factor=2):
+    """
+    Berechnet die Projektion-Dimension d* basierend auf der Formel:
+    d* = min(max_dim, max(min_dim, int(scaling_factor * log(num_vectors))))
+    
+    Parameter:
+    - num_vectors (int): Anzahl der Vektoren in der Memory Bank.
+    - max_dim (int): Maximale Ziel-Dimension (Standard: 256).
+    - min_dim (int): Minimale Ziel-Dimension (Standard: 10).
+    - scaling_factor (float): Skalierungsfaktor C für die logarithmische Abhängigkeit (Standard: 2).
+    
+    Rückgabe:
+    - int: Berechnete Projektion-Dimension d*.
+    """
+    # Berechne den logarithmischen Wert
+    log_value = np.log(num_vectors)
+    
+    # Skalierter logarithmischer Wert
+    scaled_log = scaling_factor * log_value
+    
+    # Anwenden der min- und max-Grenzen
+    projection_dim = min(max_dim, max(min_dim, int(scaled_log)))
+    
+    return projection_dim
+
 from sklearn.metrics.pairwise import euclidean_distances
 
-def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, random_seed=42):
+def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_dim=26):
     """
     Optimierte Coreset-Subsampling-Methode mit Zwischenspeicherung der Abstände.
     
@@ -146,7 +176,7 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, random_seed=
     Rückgabe:
     - coreset: numpy array der Form (coreset_size, feature_dim)
     """
-    np.random.seed(random_seed)
+    np.random.seed(42)
     num_vectors = flatten_memory_bank.shape[0]
     coreset_size = int(num_vectors * coreset_fraction)
     
@@ -154,8 +184,12 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, random_seed=
     first_index = np.random.randint(0, num_vectors)
     coreset_indices = [first_index]
     
+    
+    projector = GaussianRandomProjection(n_components=projection_dim, random_state=42)
+    projected_memory_bank = projector.fit_transform(flatten_memory_bank)
+    print(projected_memory_bank.shape)
     # Berechne initial die Abstände von allen Punkten zu diesem Startpunkt
-    distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[first_index].reshape(1, -1)).flatten()
+    distances = euclidean_distances(projected_memory_bank, projected_memory_bank[first_index].reshape(1, -1)).flatten()
     
     for i in range(coreset_size - 1):
         if i % 100 == 0:
@@ -166,11 +200,11 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, random_seed=
         coreset_indices.append(max_dist_idx)
         
         # Aktualisiere die minimalen Abstände: Nur neue Abstände berücksichtigen
-        new_distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[max_dist_idx].reshape(1, -1)).flatten()
+        new_distances = euclidean_distances(projected_memory_bank, projected_memory_bank[max_dist_idx].reshape(1, -1)).flatten()
         distances = np.minimum(distances, new_distances)
     
     # Baue das finale Coreset aus den gewählten Indizes
-    coreset = flatten_memory_bank[coreset_indices]
+    coreset = projected_memory_bank[coreset_indices]
     return coreset
 
 
