@@ -8,7 +8,7 @@ from prepare_data import load_data_from_directory, normalize, crop_images_to_224
 import pc_structure as pc
 from PIL import Image
 import matplotlib.pyplot as plt
-
+from scipy.ndimage import zoom
 
 #Visualization of Anomaly Detection for PC
 config.read("config.ini")
@@ -72,9 +72,10 @@ for i in range(len(all_images)):
     max_score = np.max(anomalies)
     anomalies = (anomalies - min_score) / (max_score - min_score)
     anomalies = anomalies.reshape(56, 56)
-
+    anomalies = zoom(anomalies, (1000/56, 1000/56), order=1)
     # Konvertiere Anomalien zu einem Bild
     anomaly_score_image = Image.fromarray((anomalies * 255).astype(np.uint8))
+
 
     # Dateinamen mit dreistelliger Formatierung erstellen
     file_index = label_counters[label_name]  # Hole aktuellen Zählerstand
@@ -88,4 +89,3 @@ for i in range(len(all_images)):
     label_counters[label_name] += 1
 
     print(f"Saved anomaly score for image {i} in {image_path}")
-

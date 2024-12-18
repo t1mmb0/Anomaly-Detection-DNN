@@ -17,6 +17,7 @@ config.read("config.ini")
 shape= config.get("CONV_AE_PARAMETERS", "shape")
 shape = ast.literal_eval(shape) 
 resnet = config.getboolean("CONV_AE_PARAMETERS", "resnet")
+upsampling = config.getboolean("CONV_AE_PARAMETERS", "upsampling")
 denoising =config.getboolean("CONV_AE_PARAMETERS", "denoising")
 noise_stddev = config.getfloat("CONV_AE_PARAMETERS", "noise_stddev")
 training_epochs = config.getint("CONV_AE_PARAMETERS", "training_epochs")
@@ -48,7 +49,7 @@ val_dataset = val_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 #Erstellung einer Modellinstanz und Compiling
 
 
-autoencoder = convAE_structure.Autoencoder(resnet, shape)
+autoencoder = convAE_structure.Autoencoder(resnet,upsampling, shape)
 autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=convAE_structure.ssim_loss)
 
 dummy_input = tf.keras.Input(shape=(224, 224, 3))
