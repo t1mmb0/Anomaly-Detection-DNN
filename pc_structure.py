@@ -79,8 +79,6 @@ def calculate_anomalies(model, image, memory_bank, projection_dim=26):
 
     # Aggregiere Patches für das Testbild
     patches = aggregate_patches(feature_map)
-    projector = GaussianRandomProjection(n_components=projection_dim, random_state=42)
-    patches = projector.fit_transform(patches)
     # Berechne Ähnlichkeit (Abstand) der Patches des Testbildes zu den Patches in der Memorybank
     distances = []
     knn.fit(memory_bank)
@@ -178,6 +176,7 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_d
     """
     np.random.seed(42)
     num_vectors = flatten_memory_bank.shape[0]
+    print(num_vectors)
     coreset_size = int(num_vectors * coreset_fraction)
     
     # Initialisierung: Wähle einen zufälligen Startpunkt
@@ -188,6 +187,7 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_d
     projector = GaussianRandomProjection(n_components=projection_dim, random_state=42)
     projected_memory_bank = projector.fit_transform(flatten_memory_bank)
     print(projected_memory_bank.shape)
+    
     # Berechne initial die Abstände von allen Punkten zu diesem Startpunkt
     distances = euclidean_distances(projected_memory_bank, projected_memory_bank[first_index].reshape(1, -1)).flatten()
     
@@ -204,7 +204,7 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_d
         distances = np.minimum(distances, new_distances)
     
     # Baue das finale Coreset aus den gewählten Indizes
-    coreset = projected_memory_bank[coreset_indices]
+    coreset = flatten_memory_bank[coreset_indices]
     return coreset
 
 

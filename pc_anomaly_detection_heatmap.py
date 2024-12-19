@@ -12,7 +12,6 @@ from scipy.ndimage import zoom
 
 #Visualization of Anomaly Detection for PC
 config.read("config.ini")
-model_dir = config.get("PC_PARAMETERS", "model_dir")
 training_mode=True
 
 capsule_label_dict = {

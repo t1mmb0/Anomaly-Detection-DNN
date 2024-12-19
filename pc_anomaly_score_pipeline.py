@@ -12,14 +12,18 @@ from scipy.ndimage import zoom
 
 #Visualization of Anomaly Detection for PC
 config.read("config.ini")
-model_dir = config.get("PC_PARAMETERS", "model_dir")
 training_mode=True
 
 bottle_label_dict = {
-    (1, 0, 0, 0): "broken_large",
-    (0, 1, 0, 0): "broken_small",
-    (0, 0, 1, 0): "contamination",
-    (0, 0, 0, 1): "good"
+    (1, 0, 0, 0, 0, 0, 0, 0, 0): "bent_wire",
+    (0, 1, 0, 0, 0, 0, 0, 0, 0): "cable_swap",
+    (0, 0, 1, 0, 0, 0, 0, 0, 0): "combined",
+    (0, 0, 0, 1, 0, 0, 0, 0, 0): "cut_inner_insulation",
+    (0, 0, 0, 0, 1, 0, 0, 0, 0): "cut_outer_insulation",
+    (0, 0, 0, 0, 0, 1, 0, 0, 0): "good",
+    (0, 0, 0, 0, 0, 0, 1, 0, 0): "missing_cable",
+    (0, 0, 0, 0, 0, 0, 0, 1, 0): "missing_wire",
+    (0, 0, 0, 0, 0, 0, 0, 0, 1): "poke_insulation"
 }
 
 #Load dataset and prepare
@@ -28,6 +32,7 @@ data = load_data_from_directory(data_dir, seed=123, image_size=(256,256))
 data = data.map(crop_images_to_224)
 
 memory_bank = np.load(config.get("PC_PARAMETERS", "coreset"))
+print(memory_bank.shape)
 model = pc.resnet50_feature_extractor()
 
 
@@ -71,7 +76,7 @@ for i in range(len(all_images)):
     max_score = np.max(anomalies)
     anomalies = (anomalies - min_score) / (max_score - min_score)
     anomalies = anomalies.reshape(56, 56)
-    anomalies = zoom(anomalies, (1000/56, 1000/56), order=1)
+    anomalies = zoom(anomalies, (1024/56, 1024/56), order=1)
     # Konvertiere Anomalien zu einem Bild
     anomaly_score_image = Image.fromarray((anomalies * 255).astype(np.uint8))
 

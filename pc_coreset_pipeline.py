@@ -54,12 +54,12 @@ memory_bank = pc.extract_aggregate(model,data_train)
 #Coreset Subsampling
 
 flatten_memory_bank = memory_bank.reshape(-1, memory_bank.shape[-1])
-np.save("trained_models/memory_bank_bottle.npy",memory_bank)
-#flatten_memory_bank = np.load("trained_models/memory_bank_bottle.npy")
+memory_bank_dir = config.get("PC_PARAMETERS", "memory_bank")
+np.save(memory_bank_dir,memory_bank)
 print(flatten_memory_bank.shape)
 
 coreset = pc.coreset_subsampling(flatten_memory_bank, projection_dim=50)
 #coreset = np.load("./trained_models/capsule_anomaly_scores.npy")
 
-output_dir = config.get("PC_PARAMETERS", "output_dir")
+output_dir = config.get("PC_PARAMETERS", "coreset")
 np.save(output_dir,coreset)
