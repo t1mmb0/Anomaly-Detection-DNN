@@ -1,6 +1,6 @@
 # Anomaly-Detection-DNN
 
-**Disclaimer**: Dieses Repository wurde im Rahmen einer Bachelorarbeit an der Universität Jena erstellt.
+**Disclaimer**: Dieses Repository wurde im Rahmen einer Bachelorarbeit an der Universität Jena erstellt. Die Erstellung des Programmcodes wurde durch Copilot und generative KI unterstützt.
 
 ## Dateistruktur
 
