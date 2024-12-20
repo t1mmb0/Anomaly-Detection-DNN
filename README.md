@@ -36,4 +36,4 @@ Die Trainings- und Testdaten liegen in folgendem Format vor:
 ![Anomalieerkennung einerKapsel](/example_images/capsule1.png)
 
 ### Autoencoder:
-![Anomalieerkennung einer Kapsel](/example_images/Capsule_AE.png)
+![Anomalieerkennung einer Kapsel](/example_images/Capsule_AE.PNG)
