@@ -8,6 +8,10 @@ from prepare_data import normalize
 import numpy as np
 from scipy.ndimage import zoom
 
+import configparser
+config = configparser.ConfigParser()
+config.read("config.ini")
+
 """
     PC_Structure
 """
@@ -111,7 +115,7 @@ def visualize_anomalies(image, anomalies, label):
     """
 
     # Beispiel für Schwellenwert
-    threshold = 0.32  # Der Schwellenwert für Anomalien
+    threshold = config.getfloat("PC_PARAMETERS", "threshold")  # Der Schwellenwert für Anomalien
 
     # Setze Anomalien unter dem Schwellenwert auf 0
     anomalies_thresholded = np.where(anomalies >= threshold, anomalies, 0)
@@ -121,7 +125,6 @@ def visualize_anomalies(image, anomalies, label):
     # Reshape der Anomalie-Werte zu einer 2D-Heatmap
     heatmap = anomalies_normalized.reshape(56, 56)  # Angenommen 56x56 Patches
     heatmap_rescaled = zoom(heatmap, (224/56, 224/56), order=1)
-    # Visualisiere das zugrundeliegende Bild
 
     plt.imshow(image)  # Originalbild anzeigen
     plt.imshow(heatmap_rescaled, cmap='hot', interpolation='nearest', alpha=0.5)  # Heatmap mit Transparenz überlagern
@@ -143,7 +146,7 @@ def extract_aggregate(model, dataset):
     return np.array(aggregated_features)
 
 from sklearn.random_projection import GaussianRandomProjection
-# Funktion zur zufälligen linearen Projektion
+
 def compute_projection_dimension(num_vectors, max_dim=256, min_dim=10, scaling_factor=2):
     """
     Berechnet die Projektion-Dimension d* basierend auf der Formel:

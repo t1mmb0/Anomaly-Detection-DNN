@@ -39,7 +39,6 @@ def normalize(images):
     
     return images
 
-
 def labels_to_images(images, labels):
 
     """

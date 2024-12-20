@@ -10,7 +10,6 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
 
-#Visualization of Anomaly Detection for PC
 config.read("config.ini")
 training_mode=True
 
@@ -21,7 +20,7 @@ bottle_label_dict = {
     (0, 0, 0, 1): "good"
 }
 
-#Load dataset and prepare
+#Lade Daten
 data_dir = config.get("PATHS", "test_dir")
 data = load_data_from_directory(data_dir, seed=123, image_size=(256,256))
 data = data.map(crop_images_to_224)
