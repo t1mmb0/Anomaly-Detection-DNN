@@ -28,5 +28,9 @@ Die Trainings- und Testdaten liegen in folgendem Format vor:
   - **Anomaliekategorie**: Jede Anomaliekategorie enthält eine oder mehrere Bilder (z.B. `image.png`, `sub_image_1.png`).
   - **.png-Dateien**: Diese Bilddateien sind die Daten, die zur Modellierung und Analyse verwendet werden.
 
+## Beispielausgabe der Modelle:
+### PatchCore:
+![Anomalieerkennung einer Schraube](/example_images/Screw2.png) ![Anomalieerkennung einerKapsel](/example_images/capsule1.png)
 
-![Anomalieerkennung einer Schraube](/example_images/Screw2.png)
+### Autoencoder:
+![Anomalieerkennung einer Kapsel](/example_images/Capsule_AE.png)
