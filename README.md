@@ -30,7 +30,8 @@ Die Trainings- und Testdaten liegen in folgendem Format vor:
 
 ## Beispielausgabe der Modelle:
 ### PatchCore:
-![Anomalieerkennung einer Schraube](/example_images/Screw2.png) ![Anomalieerkennung einerKapsel](/example_images/capsule1.png)
+![Anomalieerkennung einer Schraube](/example_images/Screw2.png) 
+![Anomalieerkennung einerKapsel](/example_images/capsule1.png)
 
 ### Autoencoder:
 ![Anomalieerkennung einer Kapsel](/example_images/Capsule_AE.png)
