@@ -33,7 +33,7 @@ Die Trainings- und Testdaten liegen in folgendem Format vor:
 
 ![Anomalieerkennung einer Schraube](/example_images/Screw2.png)
  
-![Anomalieerkennung einerKapsel](/example_images/capsule1.png)
+![Anomalieerkennung einerKapsel](/example_images/hazelnut3.png)
 
 ### Autoencoder:
 ![Anomalieerkennung einer Kapsel](/example_images/Capsule_AE.PNG)
