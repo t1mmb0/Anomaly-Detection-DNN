@@ -27,3 +27,6 @@ Die Trainings- und Testdaten liegen in folgendem Format vor:
 - **Produktkategorie**: Dies ist der übergeordnete Ordner, der die Produktkategorie beschreibt.
   - **Anomaliekategorie**: Jede Anomaliekategorie enthält eine oder mehrere Bilder (z.B. `image.png`, `sub_image_1.png`).
   - **.png-Dateien**: Diese Bilddateien sind die Daten, die zur Modellierung und Analyse verwendet werden.
+
+
+![Anomalieerkennung einer Schraube](/example_images/Screw2.png)
