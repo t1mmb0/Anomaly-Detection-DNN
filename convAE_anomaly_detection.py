@@ -29,7 +29,9 @@ def calculate_mse(input_images, reconstructed_images):
     return mse
 
 def compute_error_map(original, reconstruction):
-    return np.abs(original - reconstruction)  # Pixelweiser absoluter Fehler
+    difference = np.abs(original - reconstruction)  # Pixelweiser absoluter Fehler
+    anomaly_scores = difference / np.max(difference)
+    return anomaly_scores
 
 def visualization(original, reconstruction, error_map, label, ssim, mse, dict):
     plt.figure(figsize=(10,10))  # Dynamische Größe basierend auf Anzahl der Bilder
@@ -72,7 +74,6 @@ config.read("config.ini")
 data_filename = config.get("PATHS", "test_dir")
 model_path = config.get("CONV_AE_PARAMETERS", "model_dir")
 
-
 capsule_label_dict = {
     (1, 0, 0, 0, 0, 0): "crack",
     (0, 1, 0, 0, 0, 0): "faulty_imprint",
@@ -81,6 +82,7 @@ capsule_label_dict = {
     (0, 0, 0, 0, 1, 0): "scratch",
     (0, 0, 0, 0, 0, 1): "squeeze"
 }
+
 
 #Load data
 
@@ -93,9 +95,10 @@ dataset = data.map(lambda x,y: (normalize(x),y))
 custom_objects = {
     'Encoder': Encoder,
     'Decoder': Decoder,
+    'Decoder_Upsampling': Decoder_Upsampling,
     'Autoencoder': Autoencoder,
     'ResNetEncoder': ResNetEncoder,
-    'loss': ssim_loss
+    'loss': ssim_loss,
 }
 
 autoencoder = keras.models.load_model(model_path, custom_objects=custom_objects)
@@ -107,10 +110,10 @@ images, labels = next(iter(dataset))
 #Calculate anomaly scores
 for i in range(10):
     image, label = images[i], labels[i]
-    noisy_image = add_gausian_noise(image, stddev=0.1)
-    noisy_image_batch = tf.expand_dims(noisy_image, axis=0)
+    n_image = add_gausian_noise(image, stddev=0.25)
+    n_image_batch = tf.expand_dims(n_image, axis=0)
 
-    prediction = autoencoder.predict(noisy_image_batch)
+    prediction = autoencoder.predict(n_image_batch)
   
     original = image
     reconstruction = prediction[0]
@@ -121,4 +124,4 @@ for i in range(10):
 
 
     # Funktion aufrufen
-    visualization(image, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)
+    visualization(n_image, reconstruction, error_map, label, ssim_error, mse_error, capsule_label_dict)

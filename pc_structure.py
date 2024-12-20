@@ -65,10 +65,10 @@ def aggregate_patches(feature_map, patch_size=3):
 
 from sklearn.neighbors import NearestNeighbors
 
-def calculate_anomalies(model, image, memory_bank, projection_dim=26): 
+def calculate_anomalies(model, image, memory_bank, k_neighbors=5): 
 
     # KNN-Ähnlichkeitsberechnung
-    knn = NearestNeighbors(n_neighbors=1, metric='euclidean')
+    knn = NearestNeighbors(n_neighbors=k_neighbors, metric='euclidean')
 
 
 
@@ -80,18 +80,27 @@ def calculate_anomalies(model, image, memory_bank, projection_dim=26):
     # Aggregiere Patches für das Testbild
     patches = aggregate_patches(feature_map)
     # Berechne Ähnlichkeit (Abstand) der Patches des Testbildes zu den Patches in der Memorybank
-    distances = []
+    
     knn.fit(memory_bank)
     # Berechne KNN für jedes Patch des ersten Testbildes
-    for patch in patches:
-        # Berechne die Distanz von diesem Patch zu allen Patches der Memorybank
-        
-        dist, _ = knn.kneighbors(patch.reshape(1, -1))  # Berechne Abstand zu den nächstgelegenen Patches
-        distances.append(dist[0][0])  # Speichere den Abstand zum nächstgelegenen Nachbarn
 
+    # Berechne die Distanz von diesem Patch zu allen Patches der Memorybank       
+    dist,_ = knn.kneighbors(patches)  # Berechne Abstand zu den nächstgelegenen Patches
+    
+    # Abstand zum nächsten Nachbarn (1. Spalte von dist)
+    s_star = dist[:, 0]  # Shape: (3136,)
 
+    # Exponentielle Abstände berechnen
+    distance_to_one = np.exp(-s_star)  # Shape: (3136,)
+    distance_to_others = np.sum(np.exp(-dist), axis=1)  # Summe über alle k-Nachbarn, Shape: (3136,)
 
-    return np.array(distances)
+    # Skalierungsfaktor berechnen
+    factor = 1 - (distance_to_one / distance_to_others)  # Shape: (3136,)
+
+    # Skalierten Score berechnen
+    scaled_scores = factor * s_star  # Shape: (3136,)
+
+    return np.array(scaled_scores)
 
 def visualize_anomalies(image, anomalies, label):
     """
@@ -102,7 +111,7 @@ def visualize_anomalies(image, anomalies, label):
     """
 
     # Beispiel für Schwellenwert
-    threshold = 0.20  # Der Schwellenwert für Anomalien
+    threshold = 0.32  # Der Schwellenwert für Anomalien
 
     # Setze Anomalien unter dem Schwellenwert auf 0
     anomalies_thresholded = np.where(anomalies >= threshold, anomalies, 0)
@@ -115,7 +124,7 @@ def visualize_anomalies(image, anomalies, label):
     # Visualisiere das zugrundeliegende Bild
 
     plt.imshow(image)  # Originalbild anzeigen
-    plt.imshow(heatmap_rescaled, cmap='hot', interpolation='nearest', alpha=0.2)  # Heatmap mit Transparenz überlagern
+    plt.imshow(heatmap_rescaled, cmap='hot', interpolation='nearest', alpha=0.5)  # Heatmap mit Transparenz überlagern
     plt.colorbar(label="Anomalie-Score")
     plt.title(f"Anomalie-Lokalisierung Heatmap/ Label: {label}")
     plt.show()
@@ -162,7 +171,7 @@ def compute_projection_dimension(num_vectors, max_dim=256, min_dim=10, scaling_f
 
 from sklearn.metrics.pairwise import euclidean_distances
 
-def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_dim=26):
+def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01):
     """
     Optimierte Coreset-Subsampling-Methode mit Zwischenspeicherung der Abstände.
     
@@ -183,13 +192,10 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_d
     first_index = np.random.randint(0, num_vectors)
     coreset_indices = [first_index]
     
-    
-    projector = GaussianRandomProjection(n_components=projection_dim, random_state=42)
-    projected_memory_bank = projector.fit_transform(flatten_memory_bank)
-    print(projected_memory_bank.shape)
+
     
     # Berechne initial die Abstände von allen Punkten zu diesem Startpunkt
-    distances = euclidean_distances(projected_memory_bank, projected_memory_bank[first_index].reshape(1, -1)).flatten()
+    distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[first_index].reshape(1, -1)).flatten()
     
     for i in range(coreset_size - 1):
         if i % 100 == 0:
@@ -200,7 +206,7 @@ def coreset_subsampling(flatten_memory_bank, coreset_fraction=0.01, projection_d
         coreset_indices.append(max_dist_idx)
         
         # Aktualisiere die minimalen Abstände: Nur neue Abstände berücksichtigen
-        new_distances = euclidean_distances(projected_memory_bank, projected_memory_bank[max_dist_idx].reshape(1, -1)).flatten()
+        new_distances = euclidean_distances(flatten_memory_bank, flatten_memory_bank[max_dist_idx].reshape(1, -1)).flatten()
         distances = np.minimum(distances, new_distances)
     
     # Baue das finale Coreset aus den gewählten Indizes

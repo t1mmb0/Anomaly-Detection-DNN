@@ -98,9 +98,10 @@ example_images = next(iter(train_dataset.take(5)))
 example_images = example_images[0]
 reconstructed_images = autoencoder.predict(example_images)
 
+output_dir = config.get("CONV_AE_PARAMETERS", "output_dir" )
+models.save_model(autoencoder, output_dir)
 
 plt.figure(figsize=(15, 5))
-plt.title()
 # Originalbilder anzeigen
 for i in range(5):
     plt.subplot(2, 5, i + 1)
@@ -116,5 +117,3 @@ for i in range(5):
     plt.axis('off')
 
 plt.show()
-output_dir = config.get("CONV_AE_PARAMETERS", "output_dir" )
-models.save_model(autoencoder, output_dir)

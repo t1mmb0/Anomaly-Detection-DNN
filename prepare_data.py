@@ -192,7 +192,7 @@ def add_gausian_noise(image, stddev=0.1):
     Fügt einem Bild Gaußsches Rauschen hinzu.
     
     Parameter:
-        image: Ein TensorFlow-Tensor, der das Bild repräsentiert (Normalisiert [0, 1] oder [0, 255]).
+        image: Ein TensorFlow-Tensor, der das Bild repräsentiert (Normalisiert [0, 1]).
         stddev: Die Standardabweichung des Rauschens.
 
     Rückgabe:

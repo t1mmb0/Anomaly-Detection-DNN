@@ -12,7 +12,6 @@ from scipy.ndimage import zoom
 
 #Visualization of Anomaly Detection for PC
 config.read("config.ini")
-training_mode=True
 
 capsule_label_dict = {
     (1, 0, 0, 0, 0, 0): "crack",
@@ -51,9 +50,9 @@ all_labels = tf.concat(all_labels, axis=0)
 
 anomaly_scores_per_image = []
 
-for i in range(5):
+for i in range(len(all_images)):
     image = all_images[i]  # Take first image from batch
-    anomalies = pc.calculate_anomalies(model, image, memory_bank, projection_dim=50) # calculate scores
+    anomalies = pc.calculate_anomalies(model, image, memory_bank) # calculate scores
 
     anomaly_scores_per_image.append(anomalies)
 anomaly_scores = np.array(anomaly_scores_per_image)

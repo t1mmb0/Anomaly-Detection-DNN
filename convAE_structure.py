@@ -37,7 +37,7 @@ class Encoder(keras.Model):
         self.pool_1 = layers.MaxPooling2D((2,2),padding="same")
         self.conv_2 = layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, activation='relu', padding="same")
         self.pool_2 = layers.MaxPooling2D((2,2),padding="same")
-        self.conv_3 = layers.Conv2D(filters=256, kernel_size=(3, 3), strides=1, activation='relu', padding="same")
+        self.conv_3 = layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1, activation='relu', padding="same")
         self.H = layers.MaxPooling2D((2,2),padding="same")
         
 
@@ -82,9 +82,9 @@ class Decoder_Upsampling(tf.keras.Model):
     def __init__(self):
         super(Decoder_Upsampling, self).__init__()
 
-        self.conv_1 = layers.Conv2D(256, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.conv_1 = layers.Conv2D(64, (3, 3), strides=1, activation = "relu", padding = "same")
         self.up_1 = layers.UpSampling2D((2,2))
-        self.conv_2 = layers.Conv2D(256, (3, 3), strides=1, activation = "relu", padding = "same")
+        self.conv_2 = layers.Conv2D(64, (3, 3), strides=1, activation = "relu", padding = "same")
         self.up_2 = layers.UpSampling2D((2,2))
         self.conv_3 = layers.Conv2D(128, (3, 3), strides=1, activation = "relu", padding = "same")
         self.up_3 = layers.UpSampling2D((2,2))

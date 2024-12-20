@@ -15,15 +15,10 @@ config.read("config.ini")
 training_mode=True
 
 bottle_label_dict = {
-    (1, 0, 0, 0, 0, 0, 0, 0, 0): "bent_wire",
-    (0, 1, 0, 0, 0, 0, 0, 0, 0): "cable_swap",
-    (0, 0, 1, 0, 0, 0, 0, 0, 0): "combined",
-    (0, 0, 0, 1, 0, 0, 0, 0, 0): "cut_inner_insulation",
-    (0, 0, 0, 0, 1, 0, 0, 0, 0): "cut_outer_insulation",
-    (0, 0, 0, 0, 0, 1, 0, 0, 0): "good",
-    (0, 0, 0, 0, 0, 0, 1, 0, 0): "missing_cable",
-    (0, 0, 0, 0, 0, 0, 0, 1, 0): "missing_wire",
-    (0, 0, 0, 0, 0, 0, 0, 0, 1): "poke_insulation"
+    (1, 0, 0, 0): "broken_large",
+    (0, 1, 0, 0): "broken_small",
+    (0, 0, 1, 0): "contamination",
+    (0, 0, 0, 1): "good"
 }
 
 #Load dataset and prepare
@@ -71,12 +66,12 @@ for i in range(len(all_images)):
         label_counters[label_name] = 0  # Starte den Zähler für neue Label-Kategorie
 
     # Anomalien berechnen und normalisieren
-    anomalies = pc.calculate_anomalies(model, image, memory_bank,projection_dim=50)
+    anomalies = pc.calculate_anomalies(model, image, memory_bank)
     min_score = np.min(anomalies)
     max_score = np.max(anomalies)
     anomalies = (anomalies - min_score) / (max_score - min_score)
     anomalies = anomalies.reshape(56, 56)
-    anomalies = zoom(anomalies, (1024/56, 1024/56), order=1)
+    anomalies = zoom(anomalies, (900/56, 900/56), order=1)
     # Konvertiere Anomalien zu einem Bild
     anomaly_score_image = Image.fromarray((anomalies * 255).astype(np.uint8))
 
